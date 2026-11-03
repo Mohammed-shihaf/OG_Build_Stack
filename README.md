@@ -1,15 +1,34 @@
-# 9G client test project — Java
+# Purchasing — Java
 
-Java port of the C# test project: a Spring Boot Web API using the same
-"aggregator + project subfolder" layout as `api/api.slnx` + `api/api/api.csproj`.
+A purchase order management app: browse products, build an order, place it, and cancel it
+(cancelling puts the stock back). One Spring Boot service serves both the REST API and the web UI.
 
-| C# original | Java here |
-|---|---|
-| `api/api.slnx` | `api/pom.xml` (aggregator, `<modules>`) |
-| `api/api/api.csproj` | `api/api/pom.xml` (Spring Boot 3.5, Java 21) |
-| `WeatherForecastController.cs` | `WeatherForecastController.java` |
+- **Backend:** Spring Boot 3.5, Java 21, Maven
+- **Frontend:** static HTML/JS in `api/api/src/main/resources/static/`, served by the backend
+- **Storage:** in memory, seeded with sample products (restarting the app resets it)
 
-Requires JDK 21+ and Maven 3.9+.
+## Layout
+
+```
+api/
+├── pom.xml                         # aggregator POM (lists the modules)
+└── api/                            # the application module
+    ├── pom.xml
+    ├── api.http                    # sample requests
+    └── src/
+        ├── main/java/com/example/purchasing/
+        │   ├── controller/         # REST endpoints
+        │   ├── service/            # ordering rules (stock checks, totals, cancel)
+        │   ├── repository/         # in-memory stores
+        │   ├── model/
+        │   └── exception/          # error -> HTTP status mapping
+        ├── main/resources/static/  # web UI
+        └── test/java/...           # unit + MockMvc tests
+```
+
+## Requirements
+
+JDK 21 and Maven 3.9+.
 
 ## Build
 
@@ -17,7 +36,8 @@ Requires JDK 21+ and Maven 3.9+.
 mvn -f api/pom.xml clean package
 ```
 
-Output: `api/api/target/api-0.0.1-SNAPSHOT.jar`
+Output: `api/api/target/purchasing-api.jar`. Tests run as part of the build; JaCoCo writes
+coverage to `api/api/target/site/jacoco/`.
 
 ## Test
 
@@ -28,7 +48,24 @@ mvn -f api/pom.xml test
 ## Run
 
 ```bash
-java -jar api/api/target/api-0.0.1-SNAPSHOT.jar
+java -jar api/api/target/purchasing-api.jar
 ```
 
-Then `GET http://localhost:5125/weatherforecast`.
+- Web UI: http://localhost:5125/
+- API: http://localhost:5125/api/products
+- Health: http://localhost:5125/actuator/health
+
+Set `PORT` to use another port.
+
+## API
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/products` | List products with price and stock |
+| GET | `/api/products/{id}` | One product |
+| GET | `/api/orders` | List orders, newest first |
+| GET | `/api/orders/{id}` | One order |
+| POST | `/api/orders` | Place an order: `{"customerName": "...", "items": [{"productId": 1, "quantity": 2}]}` |
+| POST | `/api/orders/{id}/cancel` | Cancel an order and restore stock |
+
+Errors return `{"error": "..."}` with 400 (invalid order, not enough stock) or 404 (unknown id).
