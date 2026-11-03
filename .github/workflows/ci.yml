@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [python]
+  pull_request:
+    branches: [python]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: |
+          pip install -r requirements.txt build
+          pip install -e .
+      - name: Test
+        run: pytest --cov=purchasing --cov-report=term --cov-report=xml
+      - name: Build wheel and sdist
+        run: python -m build
+      - name: Smoke test the installed app
+        run: |
+          purchasing-api &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5125/api/health && break; sleep 1; done
+          curl -sf http://127.0.0.1:5125/api/products
+          curl -sf http://127.0.0.1:5125/ | grep -q "Purchasing"

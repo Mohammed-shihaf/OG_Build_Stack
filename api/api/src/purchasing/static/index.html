@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Purchasing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Purchasing</h1>
+    <span class="subtitle">Create and track purchase orders</span>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>Products</h2>
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Category</th><th class="num">Price</th><th class="num">In stock</th><th class="num">Qty</th><th></th></tr>
+        </thead>
+        <tbody id="products"></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>New purchase order</h2>
+      <ul id="cart" class="cart"></ul>
+      <p id="cart-empty" class="muted">Add products to start an order.</p>
+      <p class="total">Total: <strong id="cart-total">$0.00</strong></p>
+      <form id="order-form">
+        <label for="customer">Customer name</label>
+        <input id="customer" name="customer" required placeholder="e.g. Acme Ltd">
+        <button type="submit" id="place-order">Place order</button>
+      </form>
+      <p id="message" class="message" role="status"></p>
+    </section>
+
+    <section class="panel wide">
+      <h2>Orders</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Customer</th><th>Items</th><th class="num">Total</th><th>Status</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody id="orders"></tbody>
+      </table>
+      <p id="orders-empty" class="muted">No orders yet.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
