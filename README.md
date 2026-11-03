@@ -1,45 +1,101 @@
-# 9G client test project — TypeScript
+# Purchasing — TypeScript
 
-TypeScript port of the C# + JavaScript test project:
+A purchase order management app: browse products, build an order, place it, and cancel it
+(cancelling puts the stock back).
 
-- `api/api/` — Express 5 Web API in TypeScript (replaces the ASP.NET Core API)
-- `app/` — React 19 frontend in TypeScript, built with Vite (replaces the CRA JavaScript app)
+- **Backend:** Express 5 + TypeScript in `api/api/`
+- **Frontend:** React 19 + TypeScript, built with Vite, in `app/`
+- **Storage:** in memory, seeded with sample products (restarting the API resets it)
 
-| Original | TypeScript here |
-|---|---|
-| `api/api/api.csproj` | `api/api/package.json` + `tsconfig.json` |
-| `WeatherForecastController.cs` | `src/controllers/weatherForecastController.ts` |
-| `app/` (CRA, `react-scripts`) | `app/` (Vite + `tsc`) |
+In production the API also serves the built UI, so one process gives you both.
 
-Requires Node.js 20.19+ (or 22.12+).
+## Layout
 
-## API (`api/api/`)
-
-```bash
-npm ci --prefix api/api
 ```
-```bash
-npm run build --prefix api/api
-```
-```bash
-npm test --prefix api/api
-```
-```bash
-npm start --prefix api/api
-```
-
-Build output: `api/api/dist/`. Serves `GET http://localhost:5125/weatherforecast`.
-
-## Frontend (`app/`)
-
-```bash
-npm ci --prefix app
-```
-```bash
-npm run build --prefix app
-```
-```bash
-npm test --prefix app
+package.json            # root convenience scripts (install:all, build, test, start)
+api/
+└── api/                # backend
+    ├── src/
+    │   ├── index.ts            # starts the server (PORT, default 5125)
+    │   ├── app.ts              # Express app, error mapping, serves app/build
+    │   ├── routes/             # REST endpoints
+    │   ├── purchasingService.ts# ordering rules (stock checks, totals, cancel)
+    │   └── models.ts
+    ├── tests/                  # service + HTTP tests (vitest + supertest)
+    └── api.http                # sample requests
+app/                    # frontend
+├── src/
+│   ├── App.tsx
+│   ├── api.ts                  # fetch client
+│   └── components/             # ProductTable, OrderForm, OrdersTable
+└── vite.config.ts              # dev server on 3000, proxies /api to 5125
 ```
 
-Build output: `app/build/`. Dev server: `npm start --prefix app` on port 3000.
+## Requirements
+
+Node.js 20.19+ (CI uses Node 24, see `.nvmrc`).
+
+## Install, build, test, run (whole project)
+
+```bash
+npm run install:all
+```
+```bash
+npm run build
+```
+```bash
+npm test
+```
+```bash
+npm start
+```
+
+Then open http://localhost:5125/ (UI) or http://localhost:5125/api/products (API).
+
+## Each part on its own
+
+Backend (`api/api/`):
+
+```bash
+npm ci
+```
+```bash
+npm run build
+```
+```bash
+npm test
+```
+```bash
+npm start
+```
+
+Frontend (`app/`):
+
+```bash
+npm ci
+```
+```bash
+npm run build
+```
+```bash
+npm test
+```
+
+During development run the API (`npm run dev` in `api/api/`) and the UI dev server
+(`npm start` in `app/`) together, then open http://localhost:3000/ — Vite proxies `/api` to the API.
+
+Coverage: `npm run test:coverage` in either folder.
+
+## API
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/health` | Health check |
+| GET | `/api/products` | List products with price and stock |
+| GET | `/api/products/{id}` | One product |
+| GET | `/api/orders` | List orders, newest first |
+| GET | `/api/orders/{id}` | One order |
+| POST | `/api/orders` | Place an order: `{"customerName": "...", "items": [{"productId": 1, "quantity": 2}]}` |
+| POST | `/api/orders/{id}/cancel` | Cancel an order and restore stock |
+
+Errors return `{"error": "..."}` with 400 (invalid order, not enough stock) or 404 (unknown id).

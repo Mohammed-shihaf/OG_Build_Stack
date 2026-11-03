@@ -1,0 +1,15 @@
+{
+  "name": "purchasing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Purchasing app: Express API (api/api) + React UI (app)",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "install:all": "cd api/api && npm ci && cd ../../app && npm ci",
+    "build": "cd app && npm run build && cd ../api/api && npm run build",
+    "test": "cd api/api && npm test && cd ../../app && npm test",
+    "start": "cd api/api && npm start"
+  }
+}

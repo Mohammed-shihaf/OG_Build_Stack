@@ -1,6 +1,27 @@
-@api_HostAddress = http://localhost:5125
+@host = http://localhost:5125
 
-GET {{api_HostAddress}}/weatherforecast
+GET {{host}}/api/products
 Accept: application/json
+
+###
+
+POST {{host}}/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "Acme Ltd",
+  "items": [
+    { "productId": 1, "quantity": 2 },
+    { "productId": 5, "quantity": 10 }
+  ]
+}
+
+###
+
+GET {{host}}/api/orders
+
+###
+
+POST {{host}}/api/orders/1/cancel
 
 ###
