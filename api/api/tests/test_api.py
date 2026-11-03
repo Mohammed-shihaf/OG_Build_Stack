@@ -13,13 +13,15 @@ def test_lists_products(client):
     response = client.get("/api/products")
     assert response.status_code == 200
     assert len(response.json()) == 6
+    assert response.json()[0]["price"] == 899.99
 
 
 def test_creates_order(client):
     response = client.post("/api/orders", json={"customerName": "Acme Ltd", "items": [{"productId": 3, "quantity": 2}]})
     assert response.status_code == 201
     body = response.json()
-    assert float(body["total"]) == 298.0
+    assert body["total"] == 298.0
+    assert body["lines"][0]["unitPrice"] == 149.0
     assert body["status"] == "PLACED"
     assert body["lines"][0]["productName"] == "Office Chair"
 
